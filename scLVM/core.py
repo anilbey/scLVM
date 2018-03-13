@@ -17,9 +17,9 @@ from __future__ import division, print_function, absolute_import
 import sys
 #import limix #make sure we use the right limix version
 
-from utils.misc import dumpDictHdf5
-from utils.misc import PCA 
-from utils.misc import warning_on_one_line 
+from .utils.misc import dumpDictHdf5
+from .utils.misc import PCA
+from .utils.misc import warning_on_one_line
 import limix_legacy
 
 import limix_legacy.deprecated.modules.panama as PANAMA
@@ -39,7 +39,7 @@ import os
 class scLVM(object):
 	"""
 	Single Cell Latent Varible Model module (scLVM)
-	This class takes care of fitting and interpreting latent variable models to account for confounders in  single-cell RNA-Seq data 
+	This class takes care of fitting and interpreting latent variable models to account for confounders in  single-cell RNA-Seq data
 	This module requires LIMIX
 	"""
 
@@ -51,7 +51,7 @@ class scLVM(object):
 			geneID:		  	G vector of geneIDs
 			tech_noise:		G vector of tech_noise
 		"""
-		
+
 		#store dimensions
 		self.N = Y.shape[0]
 		self.G = Y.shape[1]
@@ -64,7 +64,7 @@ class scLVM(object):
 		if tech_noise is not None:
 			self.set_tech_noise(tech_noise)
 
-	
+
 	def fitGPLVM(self,idx=None,k=1,standardize=False,out_dir='./cache',file_name=None,recalc=False, use_ard=False, save_K=True):
 		"""
 		Args:
@@ -95,7 +95,7 @@ class scLVM(object):
 			Yconf-= Yconf.mean(0)
 			# fit gplvm
 			panama = PANAMA.PANAMA(Y=Yconf,use_Kpop=False,standardize=standardize)
-			panama.train(rank=k,LinearARD=use_ard)			
+			panama.train(rank=k,LinearARD=use_ard)
 			X	 = panama.get_Xpanama()
 			Kconf = panama.get_Kpanama()
 			var = panama.get_varianceComps()
@@ -104,7 +104,7 @@ class scLVM(object):
 			else:
 				varGPLVM = {'X_ARD':var['LinearARD'],'noise':var['noise']}
 			# export results
-			if save_K==True:    
+			if save_K==True:
 				if not os.path.exists(out_dir):
 					os.makedirs(out_dir)
 					fout = h5py.File(file_out,'w')
@@ -119,7 +119,7 @@ class scLVM(object):
 			X = f['X'][:]; Kconf = f['Kconf'][:]
 			if use_ard==False:
 				varGPLVM = {'K':f['K'][:],'noise':f['noise'][:]}
-			else:	
+			else:
 				varGPLVM = {'X_ARD':f['X_ARD'][:],'noise':f['noise'][:]}
 			f.close()
 
@@ -131,9 +131,9 @@ class scLVM(object):
 			tech_noise:		G vector of technical noise
 		"""
 		assert tech_noise.shape[0]==self.G, 'scLVM:: tech_noise dimension dismatch'
-		
+
 		self.tech_noise = tech_noise
-		
+
 	def varianceDecomposition(self,K=None,tech_noise=None,idx=None,i0=None,i1=None,max_iter=10,verbose=False):
 		"""
 		Args:
@@ -197,14 +197,14 @@ class scLVM(object):
 				var[count,-1] = tech_noise[ids]
 				count+=1;
 				continue
-			
+
 			_var = vc.getVarianceComps()[0,:]
 			KiY = vc.gp.agetKEffInvYCache().ravel()
 			for ki in range(len(K)):
 				Ystar[ki][:,count]=_var[ki]*SP.dot(K[ki],KiY)
 			var[count,:] = _var
 			count+=1;
-	
+
 		# col header
 		col_header = ['hidden_%d'%i for i in range(len(K))]
 		col_header.append('biol_noise')
@@ -323,7 +323,7 @@ class scLVM(object):
 		pv	 = SP.zeros((idx.shape[0],self.G))
 		geneID = SP.zeros(idx.shape[0],dtype=str)
 		count  = 0
-		var = self.var/self.var.sum(1)[:,SP.newaxis] 
+		var = self.var/self.var.sum(1)[:,SP.newaxis]
 		for ids in idx:
 			if verbose:
 				print('.. fitting gene %d'%ids)
@@ -349,7 +349,7 @@ class scLVM(object):
 		if geneID is not None:	info['gene_row'] = geneID
 
 		return pv, beta, info
-		
-		
-			
+
+
+
 

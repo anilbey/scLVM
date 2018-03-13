@@ -17,7 +17,6 @@ __all__ = ['']
 
 __version__ = '0.1'
 
-from . import core
 from .core import *
 from .core import scLVM
 from . import gp_clvm
